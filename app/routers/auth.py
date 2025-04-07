@@ -15,11 +15,13 @@ from app.schemas import CreateUser
 from app.models.user import User
 
 
+router = APIRouter(prefix='/auth', tags=['auth'])
+
+
 load_dotenv()
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
-router = APIRouter(prefix='/auth', tags=['auth'])
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
