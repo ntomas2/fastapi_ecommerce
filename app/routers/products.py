@@ -18,12 +18,13 @@ async def all_products(db: Annotated[AsyncSession, Depends(get_db)]):
     products = await db.scalars(select(Product).join(Category).where(Product.is_active == True,
                                                                Category.is_active == True,
                                                                Product.stock > 0))
-    if products is None:
+    products = products.all()
+    if not products:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There are no products'
         )
-    return products.all()
+    return products
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED)

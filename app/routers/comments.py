@@ -4,7 +4,6 @@ from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import Annotated
-from datetime import datetime, timedelta, timezone
 
 from app.backend.db_depends import get_db
 from app.schemas import CreateComment
@@ -19,12 +18,13 @@ router = APIRouter(prefix='/comments', tags=['comments'])
 @router.get('/')
 async def all_comments(db: Annotated[AsyncSession, Depends(get_db)]):
     comments = await db.scalars(select(Comment).where(Comment.is_active == True))
-    if comments is None:
+    comments = comments.all()
+    if not comments:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There are no comments'
         )
-    return comments.all()
+    return comments
 
 
 @router.get('/detail/{product_id}')
@@ -37,18 +37,18 @@ async def comment_detail(db: Annotated[AsyncSession, Depends(get_db)],
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There is no product found'
         )
-    product_comments = await db.scalars(select(Comment).where(Comment.product_id == product_id,
+    comment_list = await db.scalars(select(Comment).where(Comment.product_id == product_id,
                                                               Comment.is_active == True))
-    # Не могу понять, почему ниже не возвращет None при отсутствии комментариев у продукта
-    if product_comments is None:
+    comment_list = comment_list.all()
+    if not comment_list:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There are no product comments'
         )
-    return product_comments.all()
+    return comment_list
 
 
-@router.post('/')
+@router.post('/', status_code=status.HTTP_201_CREATED)
 async def add_comment(db: Annotated[AsyncSession, Depends(get_db)],
                      create_comment: CreateComment,
                      get_user: Annotated[dict, Depends(get_current_user)]):

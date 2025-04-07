@@ -16,7 +16,13 @@ router = APIRouter(prefix='/category', tags=['category'])
 @router.get('/')
 async def get_all_categories(db: Annotated[AsyncSession, Depends(get_db)]):
     categories = await db.scalars(select(Category).where(Category.is_active == True))
-    return categories.all()
+    categories = categories.all()
+    if not categories:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='There is no categories yet'
+        )
+    return categories
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
