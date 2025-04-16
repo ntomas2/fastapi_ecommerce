@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+
 from loguru import logger
 from uuid import uuid4
 
