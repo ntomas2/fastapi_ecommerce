@@ -11,7 +11,6 @@ POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 DATABASE_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db:5432/{POSTGRES_DB}'
-print(DATABASE_URL)
 engine = create_async_engine(DATABASE_URL, echo=False)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
