@@ -10,6 +10,10 @@ class OutputProduct(OutputModel):
     pass
 
 
+class OutputCategory(OutputModel):
+    pass
+
+
 class CreateProduct(BaseModel):
     name: str
     description: str
@@ -37,6 +41,19 @@ class GetProduct(CreateProduct):
 class CreateCategory(BaseModel):
     name: str
     parent_id: int | None = None
+
+
+class UpdateCategory(CreateCategory):
+    name: str
+    parent_id: int | None = None
+
+
+class GetCategory(CreateCategory):
+    name: str
+    slug: str
+    parent_id: int | None
+    is_active: bool
+    
 
 
 class CreateUser(BaseModel):
