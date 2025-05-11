@@ -109,10 +109,16 @@ async def update_product_model(db: DBSessionDep,
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There is no category found'
         )
-    await db.execute(update(Product)
-                    .where(Product.id == product_update.id)
-                    .values(**update_product_model.model_dump(exclude_unset=True),
-                            slug=slugify(update_product_model.name)))
+    
+    if update_product_model.name:
+        await db.execute(update(Product)
+                        .where(Product.id == product_update.id)
+                        .values(**update_product_model.model_dump(exclude_none=True),
+                                slug=slugify(update_product_model.name)))
+    else:
+        await db.execute(update(Product)
+                        .where(Product.id == product_update.id)
+                        .values(**update_product_model.model_dump(exclude_none=True)))
     
     await db.commit()
     return {
