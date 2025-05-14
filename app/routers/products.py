@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
-from typing import Annotated
+from fastapi import APIRouter, status, HTTPException
 from sqlalchemy import insert, select, update
 from slugify import slugify
 
@@ -30,7 +29,7 @@ async def all_products(db: DBSessionDep) -> list[GetProduct]:
 async def create_product(db: DBSessionDep,
                          create_product: CreateProduct,
                          get_user: CurrentUserDep) -> OutputProduct:
-    if not (get_user.get('is_admin') or get_user.get('is_supplier')):
+    if get_user.user_role == 'is_customer':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You are not authorized to use this method'
@@ -43,7 +42,7 @@ async def create_product(db: DBSessionDep,
         )
     await db.execute(insert(Product).values(**create_product.model_dump(),
                                             slug=slugify(create_product.name),
-                                            supplier_id = get_user.get('id')))
+                                            supplier_id = get_user.id))
     await db.commit()
     return {
         'status_code': status.HTTP_201_CREATED,
@@ -85,7 +84,7 @@ async def update_product_model(db: DBSessionDep,
                                product_slug: str,
                                update_product_model: UpdateProduct,
                                get_user: CurrentUserDep) -> OutputProduct:
-    if not (get_user.get('is_supplier') or get_user.get('is_admin')):
+    if get_user.user_role == 'is_customer':
         raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail='You are not authorized to use this method'
@@ -98,7 +97,7 @@ async def update_product_model(db: DBSessionDep,
             detail='There is no product found'
         )
 
-    if not (get_user.get('id') == product_update.supplier_id or get_user.get('is_admin')):
+    if not (get_user.id == product_update.supplier_id or get_user.user_role == 'is_admin'):
         raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail='You have not enough permission for this action'
@@ -131,7 +130,7 @@ async def update_product_model(db: DBSessionDep,
 async def delete_product(db: DBSessionDep,
                          product_slug: str,
                          get_user: CurrentUserDep) -> OutputProduct:
-    if not (get_user.get('is_supplier') or get_user.get('is_admin')):
+    if get_user.user_role == 'is_customer':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You are not authorized to use this method'
@@ -142,7 +141,7 @@ async def delete_product(db: DBSessionDep,
             status_code=status.HTTP_404_NOT_FOUND,
             detail='There is no product found'
         )
-    if not (get_user.get('id') == product_delete.supplier_id or get_user.get('is_admin')):
+    if not (get_user.id == product_delete.supplier_id or get_user.user_role == 'is_admin'):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You have not enough permission to for this action'

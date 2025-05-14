@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
 
 
 class OutputModel(BaseModel):
@@ -12,6 +13,15 @@ class OutputProduct(OutputModel):
 
 class OutputCategory(OutputModel):
     pass
+
+
+class OutputUser(OutputModel):
+    pass
+
+
+class OutputToken(BaseModel):
+    access_token: str
+    token_type: str = 'bearer'
 
 
 class CreateProduct(BaseModel):
@@ -64,7 +74,20 @@ class CreateUser(BaseModel):
     password: str
 
 
+class GetUser(BaseModel):
+    username: str
+    id: int
+    user_role: str
+
+
 class CreateComment(BaseModel):
     comment: str
     grade: int = Field(ge=0, le=5)
     product_id: int
+
+
+class GetComment(CreateComment):
+    id: int
+    user_id: int
+    comment_dt: datetime
+    # is_active: bool

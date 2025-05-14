@@ -1,6 +1,12 @@
 from app.backend.db import Base
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Enum as SQLAlchemyEnum
+from enum import Enum
 
+
+class UserRole(str, Enum):
+    IS_ADMIN = 'is_admin'
+    IS_SUPPLIER = 'is_supplier'
+    IS_CUSTOMER = 'is_customer'
 
 class User(Base):
     __tablename__ = 'users'
@@ -11,7 +17,6 @@ class User(Base):
     username = Column(String, unique=True)
     email = Column(String, unique=True)
     hashed_password = Column(String)
+    user_role = Column(SQLAlchemyEnum(UserRole, name='user_role', values_callable=lambda e: [field.value for field in e]),
+                       default=UserRole.IS_CUSTOMER)
     is_active = Column(Boolean, default=True)
-    is_admin = Column(Boolean, default=False)
-    is_supplier = Column(Boolean, default=False)
-    is_customer = Column(Boolean, default=True)

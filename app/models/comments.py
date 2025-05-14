@@ -8,7 +8,7 @@ class Comment(Base):
     __tablename__ = 'comments'
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     product_id = Column(Integer, ForeignKey('products.id'))
     comment = Column(String)
     comment_dt = Column(DateTime(timezone=True), default=datetime.now)

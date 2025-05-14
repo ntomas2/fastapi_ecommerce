@@ -27,7 +27,7 @@ async def get_all_categories(db: DBSessionDep) -> list[GetCategory]:
 async def create_category(db: DBSessionDep,
                           create_category: CreateCategory,
                           get_user: CurrentUserDep) -> OutputCategory:
-    if not (get_user.get('is_admin')):
+    if get_user.user_role != 'is_admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You must be admin user for this'
@@ -46,7 +46,7 @@ async def update_category(db: DBSessionDep,
                           category_id: int,
                           update_category: UpdateCategory,
                           get_user: CurrentUserDep) -> OutputCategory:
-    if not (get_user.get('is_admin')):
+    if get_user.user_role != 'is_admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You must be admin user for this'
@@ -73,8 +73,8 @@ async def update_category(db: DBSessionDep,
 @router.delete('/', response_model=OutputCategory)
 async def delete_category(db: DBSessionDep,
                           category_id: int,
-                          get_user: CurrentUserDep):
-    if not (get_user.get('is_admin')):
+                          get_user: CurrentUserDep) -> OutputCategory:
+    if get_user.user_role != 'is_admin':
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You must be admin user for this'
