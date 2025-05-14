@@ -9,19 +9,12 @@ from alembic import context
 
 from app.backend.db import Base
 from app.models import category, products, user, comments
+from settings import POSTGRES_DB, POSTGRES_PASSWORD, POSTGRES_USER
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 # docker
 # DATABASE_URL = f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db:5432/{POSTGRES_DB}'
