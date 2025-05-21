@@ -45,7 +45,7 @@ class UpdateProduct(CreateProduct):
 class GetProduct(CreateProduct):
     slug: str
     rating: float
-    is_active: bool
+    # is_active: bool
 
 
 class CreateCategory(BaseModel):
