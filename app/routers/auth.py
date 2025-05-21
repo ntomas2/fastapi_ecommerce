@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select, insert
@@ -10,10 +12,23 @@ from datetime import datetime, timedelta, timezone
 from app.backend.db_depends import DBSessionDep
 from app.schemas import CreateUser, OutputUser, OutputToken, GetUser
 from app.models.user import User, UserRole
+from app.services.rabbitmq.email_consumer import consume_email_queue
+from app.services.rabbitmq.email_producer import send_welcome_email
 from settings import SECRET_KEY, ALGORITHM
 
 
-router = APIRouter(prefix='/auth', tags=['auth 🔐'])
+async def startup_event():
+    # Запускаем consumer в фоне
+    asyncio.create_task(consume_email_queue())
+
+@asynccontextmanager
+async def lifespan(router: APIRouter):
+    await startup_event()
+    yield    
+
+
+router = APIRouter(prefix='/auth', tags=['auth 🔐'], lifespan=lifespan)
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -116,6 +131,8 @@ async def create_user(db: DBSessionDep, create_user: CreateUser) -> OutputUser:
     await db.execute(insert(User).values(**create_user.model_dump(exclude={'password'}),
                                          hashed_password=bcrypt_context.hash(create_user.password)))
     await db.commit()
+    user = await db.scalar(select(User).where(User.username == create_user.username))
+    asyncio.create_task(send_welcome_email(user.email, user.username))
     return {
         'status_code': status.HTTP_201_CREATED,
         'message': 'Successful'
